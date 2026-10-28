@@ -1,0 +1,21 @@
+LIBRARY gone_v8
+EXPORTS
+    gone_v8_new
+    gone_v8_eval_into
+    gone_v8_result_free
+    gone_v8_free
+    gone_v8_thread_id
+    gone_v8_scope_open
+    gone_v8_scope_close
+    gone_v8_scope_is_current
+    gone_v8_scope_check
+    gone_v8_compile
+    gone_v8_script_free
+    gone_v8_script_run
+    gone_v8_scope_eval
+    gone_v8_value_kind
+    gone_v8_value_number
+    gone_v8_value_bool
+    gone_v8_value_string
+    gone_v8_value_new
+    gone_v8_value_call
