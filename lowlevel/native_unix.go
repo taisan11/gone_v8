@@ -6,6 +6,7 @@ package lowlevel
 #cgo CXXFLAGS: -std=c++20 -fno-rtti -Wall -Wextra -DV8_COMPRESS_POINTERS -DV8_31BIT_SMIS_ON_64BIT_ARCH -I${SRCDIR}/../deps/include
 #cgo linux CXXFLAGS: -fPIC
 #cgo darwin CXXFLAGS: -stdlib=libc++
+#cgo darwin LDFLAGS: -framework CoreFoundation
 #cgo linux,amd64 LDFLAGS: -L${SRCDIR}/../deps/linux_amd64 -lv8 -pthread -ldl
 #cgo linux,arm64 LDFLAGS: -L${SRCDIR}/../deps/linux_arm64 -lv8 -pthread -ldl
 #cgo darwin,amd64 LDFLAGS: -L${SRCDIR}/../deps/darwin_amd64 -lv8 -pthread

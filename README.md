@@ -6,7 +6,7 @@ A small Go/Cgo binding prototype inspired by `denoland/rusty_v8`, using **precom
 
 ## Releases and dependency setup
 
-Pushing a `v*` tag runs `.github/workflows/release.yml`: it downloads the pinned prebuilt V8, builds the Windows bridge where applicable, tests each target, and publishes source-plus-native-dependency archives as GitHub Release assets. Manual workflow runs build downloadable artifacts but do not publish a release unless run on a `v*` tag. Release targets are Linux and macOS amd64/arm64 and Windows amd64; a release is published only after every matrix build succeeds.
+Pushing a `v*` tag runs `.github/workflows/release.yml`: it downloads the pinned prebuilt V8, builds the Windows bridge where applicable and the demos, and publishes archives containing source, native dependencies, and demo binaries. It does not run tests or `go vet`. Manual workflow runs build downloadable artifacts but do not publish a release unless run on a `v*` tag. Release targets are Linux and macOS amd64/arm64 and Windows amd64; a release is published only after every matrix build succeeds.
 
 Use a target-specific release archive as a writable source checkout, or use the [`get_libs` utility API](get_libs/README.md) / `go run ./tools/fetch.go` to install dependencies in a checkout. Native files are not automatically installed by `go get`: for a checkout used by another module, use a Go workspace or `replace`. Windows additionally requires a built bridge DLL at runtime.
 

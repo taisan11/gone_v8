@@ -15,7 +15,9 @@ if (-not $env:INCLUDE -or -not $env:LIB) {
 if ($env:VSCMD_ARG_TGT_ARCH -and $env:VSCMD_ARG_TGT_ARCH -ne "x64") {
     throw "Select the x64 developer environment, not $env:VSCMD_ARG_TGT_ARCH."
 }
-$compiler = Get-Command $Clang -CommandType Application -ErrorAction SilentlyContinue
+# Get-Command -CommandType Application can return multiple matches from PATH
+# (as on GitHub's Windows runners). Select one executable, not an array.
+$compiler = Get-Command $Clang -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
 if (-not $compiler -and $Clang -eq "clang-cl") {
     # Developer PowerShell does not always add optional LLVM tools to PATH.
     $candidates = @()
@@ -32,7 +34,7 @@ if (-not $compiler -and $Clang -eq "clang-cl") {
     }
     foreach ($candidate in $candidates) {
         if (Test-Path -LiteralPath $candidate -PathType Leaf) {
-            $compiler = Get-Command $candidate -CommandType Application -ErrorAction Stop
+            $compiler = Get-Command $candidate -CommandType Application -ErrorAction Stop | Select-Object -First 1
             break
         }
     }
@@ -47,6 +49,8 @@ Alternatively install LLVM and pass its full path:
 "@
 }
 Write-Host "Using compiler: $($compiler.Source)"
+& $compiler.Source --version
+if ($LASTEXITCODE -ne 0) { throw "Cannot run clang-cl --version ($LASTEXITCODE)." }
 
 Push-Location $root
 try {
@@ -97,7 +101,7 @@ try {
         # libc++ only needs MSVC's __ExceptionPtr* implementation here. Extract
         # that object without modifying the installed library or suppressing
         # duplicate-symbol errors with /FORCE:MULTIPLE.
-        $librarian = Get-Command lib.exe -CommandType Application -ErrorAction Stop
+        $librarian = Get-Command lib.exe -CommandType Application -ErrorAction Stop | Select-Object -First 1
         $libcpmt = $null
         foreach ($directory in ($env:LIB -split ';')) {
             if (-not $directory) { continue }

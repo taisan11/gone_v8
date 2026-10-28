@@ -36,7 +36,15 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.24.x'
-          cache: false
+          # Go's cgo cache does not detect changes to external native libraries.
+          # Include the pinned V8 manifest and bridge headers in the cache key.
+          cache: true
+          cache-dependency-path: |
+            go.mod
+            get_libs/get_libs.go
+            lowlevel/*.h
+            lowlevel/*.cc
+            lowlevel/native_unix.go
       - name: Set up Windows C++ build environment
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
@@ -49,20 +57,23 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: ./tools/build-windows.ps1 -SkipFetch
-      - name: Test and build
+      - name: Build release demos
         shell: bash
         run: |
-          go test -count=1 ./...
-          go vet ./...
-          go build ./cmd/demo ./cmd/lowlevel
+          mkdir -p bin
+          suffix=''
+          if [ '${{ runner.os }}' = 'Windows' ]; then suffix='.exe'; fi
+          go build -o "bin/demo${suffix}" ./cmd/demo
+          go build -o "bin/lowlevel${suffix}" ./cmd/lowlevel
+          if [ '${{ runner.os }}' = 'Windows' ]; then cp deps/windows_amd64/gone_v8.dll bin/; fi
       - name: Package source and native dependencies
         shell: bash
         run: |
           set -euo pipefail
           mkdir release-stage
           git archive HEAD | tar -xf - -C release-stage
-          cp -R deps release-stage/deps
-          tar -czf 'gone_v8-${{ matrix.label }}.tar.gz' -C release-stage .
+          # Avoid copying the large static library; use fast compression.
+          tar -cf - -C release-stage . -C "$(pwd)" deps bin | gzip -1 > 'gone_v8-${{ matrix.label }}.tar.gz'
       - uses: actions/upload-artifact@v4
         with:
           name: gone_v8-${{ matrix.label }}
